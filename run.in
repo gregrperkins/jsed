@@ -1,0 +1,68 @@
+<html>
+<head>
+<title>Sed in Javascript</title>
+</head>
+<body>
+<script>
+/* Black magic taken from jslint */
+var is={ie:navigator.appName=='Microsoft Internet Explorer',ns:navigator.appName=='Netscape',ua:navigator.userAgent.toLowerCase(),version:parseFloat(navigator.appVersion.substr(21))||parseFloat(navigator.appVersion),win:navigator.platform=='Win32'};if(is.ua.indexOf('opera')>=0){is.ie=is.ns=false;is.opera=true;}if(is.ua.indexOf('gecko')>=0){is.ie=is.ns=false;is.gecko=true;}
+function M(link){var d;if(typeof link=='string'){d=M.get(link);}else{d=link;}this.div=d;}
+M.get=function(id,e){var d=e||window.document;if(is.ns){return d.layers[id];}else if(is.ie){return d.all[id];}else{return d.getElementById(id);}};
+M.prototype.setHTML=function(h){if(is.ns){this.div.document.write(h||' ');this.div.document.close();}else{this.div.innerHTML=h||'';}};
+M.prototype.setBgColor=function(color){if(is.ns){this.div.bgColor=color||this.color;}else{this.div.style.backgroundColor=color||this.color;}};
+if ((!is.ie && !is.gecko) || is.version < 5.1) {document.write("<b>This program runs on IE 5.5 or Netscape 6.2<\/b>");}
+String.prototype.entityify = function () {return this.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');};
+/* end of black magic */
+</script>
+<script src="jsed.js"></script>
+<form name="f">
+<p><b>JSed (sed in JavaScript) version 1.0</b> - Copyright (C) 2005 Laurent Vogel
+&lt;<script>document.write("lvl" + "@club-internet.fr");</script>&gt;
+</b></p>
+<p><b>Running 
+<a href="SCRIPTURL">SCRIPTNAME</a>
+on the following input:</b>
+<br>
+<textarea name="input" rows="20" cols="80"></textarea>
+<br>
+<input type="button" value="run" onclick="go();return false;">
+&nbsp;
+<input type="checkbox" name="nflag">&nbsp;-n flag&nbsp;
+&nbsp;&nbsp;&nbsp;
+<input type="checkbox" name="pflag">&nbsp;<small>POSIX</small> mode&nbsp;
+&nbsp;&nbsp;&nbsp;
+jumpmax = <input type="text" name="jumpmax">
+&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;
+[ <a href="index.html">About</a> | <a href="manual.html">Manual</a> ]
+<br>
+<b>Output:</b><br>
+</p>
+<div id="output" style="width:800;overflow:scrolling;"></div>
+</form>
+<script>
+var script = SCRIPT;
+sed.compile(script);
+document.forms.f.input.value = INPUT;
+document.forms.f.nflag.checked = sed.nflag;
+document.forms.f.pflag.checked = sed.pflag;
+document.forms.f.jumpmax.value = sed.jumpmax;
+var output=new M('output');
+var o;
+function out(s){o = o + s.entityify();}
+function err(s){o = o + "<b>" + s.entityify() + "</b>";}
+function go(){
+    o = ""
+    sed.nflag = document.forms.f.nflag.checked;
+    sed.pflag = document.forms.f.pflag.checked;
+    sed.jumpmax = document.forms.f.jumpmax.value;
+    sed.out = out;
+    sed.err = err;
+    sed.execute(document.forms.f.input.value);
+    output.setHTML("<pre>" + o + "</pre>");
+}
+function clearinput(){document.forms.f.input.value='';clearoutput();}
+function clearoutput(){output.setHTML('');}
+</script>
+</body>
+</html>

@@ -1,0 +1,628 @@
+.de TQ
+.br
+.ns
+.TP \\$1
+..
+.TH jsed 1 "22 January 2004" "jsed 1.0"
+.SH NAME
+jsed \- an implementation of sed, the stream editor, in JavaScript
+.SH SYNOPSIS
+Fill the 
+.IR script " and " input
+text areas, then click the
+.B run
+button to launch
+.B sed.
+.SH DESCRIPTION
+.B sed
+copies the named files (standard input default) to the standard
+output, edited according to a script of commands. 
+.SH OPTIONS
+.TP
+.B \-n flag
+Suppress the default output that normally takes place at the end of 
+each cycle through the script. If the first two characters of the
+script are
+.B #n
+then it is equivalent to the 
+.B \-n
+option.
+.TP
+.B POSIX mode
+Disallow non-POSIX extensions if checked.
+.TP
+.BI jumpmax= number
+Stop execution if more that
+.I number
+jumps are taken (commands
+.BR { ", " b ", " t " or " D ) when processing the same input line.
+.SH MODE OF OPERATION
+.P
+.B sed
+maintains two data buffers: the pattern space and the hold space.
+Normally
+.B sed
+executes the following cycle on each line of input: an input line is 
+copied into the pattern space (less its terminating 
+.IR newline );
+.B sed
+then tries to apply each command starting at the beginning of the script;
+finally (unless the
+.B \-n
+option was given) the pattern space is written to the standard output 
+(with a final 
+.IR newline ).
+.P
+The hold space is initially empty, and is kept untouched by the 
+.B sed
+cycle. The hold space can copied or appended to or from or swapped 
+with the pattern space using functions 
+.BR g ", " G ", " h ", " H ", " x .
+.SS Command syntax
+.P
+The script consists of commands, of the following form:
+.IP "" 2
+.RI "[ " address
+[
+.BI , address
+] ]
+.RB [ ! ]
+.IR function " [ " arguments " ]"
+.P
+Commands can be preceded by white space and must be followed by
+a 
+.I newline 
+or (for most commands) a semicolon. 
+Commands whose function is one of
+.BR a\e ", " b ", " c\e ", " i\e " , " r ", " t ", " w ", " : ", or " #
+can only be followed by a 
+.I newline 
+as the argument to these function
+encompasses the remainder of the script line, going over any semicolon 
+present on the line.
+.SS Addresses
+Command functions are actually executed only if selected by the 
+addresses (based on the input line number and the contents of the 
+pattern space at the time the command is tried to be executed). 
+.P
+.IP \(bu 3
+A command with no addresses is always selected.
+.IP \(bu 3
+A command with one address selects every pattern space that match
+that address.
+.IP \(bu 3
+A command with two addresses selects the inclusive range from
+the first pattern space that matches the first address through the
+next pattern space that matches the second. (If the second address
+is a number less than or equal to the line number first selected,
+only one line is selected.) Once the second address is matched 
+.B sed
+starts looking for the first one again; thus, any number of these 
+ranges will be matched.
+.P
+The negation operator 
+.B !
+can prefix a command to apply it to every
+line not selected by the address(es).
+.P
+The following address types are supported:
+.TP
+.I number
+match only the specified line number. The line number start at 1 and
+run cumulatively across input files.
+.TP
+.B $
+match only the last input line.
+.TP
+.BI / regexp /
+match when the pattern space matches the regular expression 
+.IR regexp .
+.TP
+.BI \e% regexp %
+Same as above but with the delimiter being
+.BR % " instead of " / .
+the
+.B %
+may be replaced by any other single character). 
+.SS Functions
+.P
+In the following list of functions, the maximum number of addresses
+permitted for each function is indicated in parentheses.
+.P
+An argument denoted 
+.I text 
+consists of one or more lines,  with all but the last ending with 
+.BR \e . 
+To insert a 
+.B \e 
+in the text, put two backslashes:
+.BR \e\e .
+Other backslashes in the
+.I text
+argument are ignored.
+.P
+An argument denoted 
+.IR file " or " label
+may be preceded by white space, and must be last on the command line.
+.TP
+.B a\e
+.TQ
+.I text   
+(1) Append. Place 
+.I text 
+on output at the end of the cycle.
+.TP
+.BI "b " label
+(2) Branch to the 
+.B : 
+command bearing the 
+.IR label .
+If no 
+.I label 
+is given, branch to the end of the script.
+.TP
+.B c\e
+.TQ
+.I text   
+(2) Change. Delete the pattern space.  With 0 or 1 address,  or at
+the end of a 2-address range, place 
+.I text 
+on the output.  Start the next cycle.
+.TP 
+.B d          
+(2) Delete the pattern space. Start the next cycle.
+.TP
+.B D          
+(2) Delete the first line of the pattern space (all chars up to the
+first 
+.IR newline ) 
+or the entire pattern space if it does not contain any
+.IR newline . 
+Start the next cycle.
+.TP
+.B g
+(2) Replace the contents of the pattern space with the contents of
+the hold space.
+.TP
+.B G
+(2) Append to the pattern space a 
+.I newline 
+followed by the contents of the hold space.
+.TP
+.B h
+(2) Copy the pattern space into the hold space.
+.TP
+.B H
+(2) Append to the hold space a 
+.I newline 
+followed by the contents of the pattern space.
+.TP
+.B i\e
+.TQ
+.I text   
+(1) Insert. Write 
+.I text 
+on the standard output.
+.TP
+.B l
+(2) List. Write the pattern space to standard output in a visually 
+unambiguous form. Some non-printable characters are written as 
+.BR \e\e ", " \ea ", " \eb ", " \ef ", " \el ", " \er ", " \et " or " \ev 
+(same convention as in the C language); non-printing 
+characters not in that list are written as a backslash followed by a 
+three-digit octal number representing the ASCII number. 
+Long lines are folded by inserting a backslash followed by a 
+.IR newline . 
+The end of the pattern space is indicated by a final
+.BR $ .
+.TP
+.B n
+(2) Write the pattern space to standard output (unless option 
+.B \-n 
+is given). Read the next line of input into the pattern space.
+If no line could be read (the last line was already reached), quit.
+.TP
+.B N
+(2) Append to the pattern space a 
+.I newline 
+and the next line of input. The current line number changes.
+If no line could be read (the last line was already reached), quit.
+.TP
+.B p
+(2) Print. Write the pattern space to standard output.
+.TP
+.B P
+(2) Write the first line of the pattern space (all chars up to and
+including the first 
+.IR newline ) 
+to standard output.
+.TP
+.B q
+(1) Quit. Branch to the end of the script. Do not start a new cycle.
+.TP
+.BI "r " rfile
+(1) Schedule appending the contents of file 
+.IR rfile 
+before reading the next input line. 
+.TP
+.BI s/ regexp / replacement / flags         
+(2) Substitute the 
+.I replacement 
+for instances of the regular expression
+.I regexp
+in the current pattern space.  Any character except 
+.B \e
+or 
+.I newline
+may be used as delimiter
+instead of 
+.BR / .
+The following character sequences have special meaning in the 
+.I replacement
+string:
+.RS
+.TP
+.BI &
+insert the string matched by the entire regular expression
+.TP
+.BI \e i
+insert the string matched by the 
+.IR i th
+.BR \e( .\|.\|. \e) 
+subexpression (where
+.I i
+is a digit from 1 to 9).
+.TP
+.BI \e c
+insert a verbatim character 
+.IR c ", where " c
+is either the delimiter, or any of  
+.BR \e ", " & " or"
+.IR newline .
+.RE
+.IP
+The 
+.I flags
+are zero or more of the following:
+.RS
+.TP 
+.B g
+Global. Substitute for all nonoverlapping instances of the string
+rather than just the first one.
+.TP
+.B p
+Print the pattern space if a replacement was made.
+.TP
+.BI "w " wfile
+Write. Append the current text buffer to a file argument as in a
+.B w 
+command if a replacement is made. 
+.TP
+.I N
+(a positive decimal number) Substitute only the 
+.IR N th 
+instance of the string.
+.P
+Flags 
+.I N 
+and 
+.B g 
+are incompatible.
+.RE
+.TP
+.BI "t " label
+(2) Branch-if-test. Branch to the 
+.B : 
+command with the given 
+.I label 
+if any replacements have been made (using the 
+.B s
+command) since the most recent read of an input 
+line or execution of a 
+.B t
+command. If no 
+.I label 
+is given, branch to the end of the script.
+.TP 
+.BI "w " wfile
+(2) Write. Append the pattern space to file
+.IR wfile .
+The
+.I wfile
+arguments of all
+.B w
+commands are open in write mode at the beginning, even if the 
+.B w
+commands get never executed.
+.TP
+.B x
+(2) Exchange the contents of the pattern and hold spaces.
+.TP
+.BI y/ string1 / string2 /
+(2) Translate. Replace in the pattern space each occurrence of a 
+character in 
+.I string1  
+with the corresponding character in 
+.IR string2 .
+Any character except 
+.B \e
+or 
+.I newline
+may be used as delimiter
+instead of 
+.BR / .
+Both strings can contain 
+.B \en
+(standing for a 
+.IR newline ),
+and 
+.BI \e d
+(representing a verbatim delimiter character 
+.IR d ).
+The lengths of these strings must be equal.
+.TP
+.BI ": " label  
+(0) This command does nothing but hold a label for 
+.BR b " and " t 
+commands to branch to.
+.TP
+.B =
+(1) Write to the standard output the current line number in decimal, 
+followed by a 
+.IR newline .
+.TP 
+.BI "{ " commands.\|.\|. " }"
+(2) Execute the following commands up to a matching 
+.B }
+only when the current line matches the address or address range given. 
+Command groups can nest.
+.B sed
+does not prevent branching in or out of such groups.
+.TP
+.BI # comment
+(0) everything after a 
+.B #
+character up to the next 
+.I newline 
+is ignored (with the exception that comment
+.B #n
+at the very beginning of the script activates the 
+.B \-n
+option).
+.SS Regular expressions
+.B sed 
+implements basic regular expressions, which consist of the elements
+described below. A concatenation of regexp elements matches the 
+concatenation of what each element matches. 
+.TP
+.B ^
+at the beginnning of the regexp, matches the beginning of the pattern
+space. Matches a verbatim
+.B ^
+character otherwise.
+.TP
+.B $
+at the end of the regexp, matches the end of the pattern space. Matches
+a verbatim 
+.B $
+character otherwise.
+.TP
+.B .
+matches any single character (including 
+.IR newline ).
+.TP
+.B \en
+matches a 
+.IR newline .
+.TP
+.BI \e i
+matches a copy of the substring matched by the 
+.IR i th
+subexpression 
+.RI ( i
+is a digit between 1 and 9), i. e. the
+subexpression starting at the 
+.IR i th
+opening
+.BR \e( 
+from the left; the matching
+.B \e)
+must be on the left of the 
+.BI \e i
+backreference.
+If the subexpression matches a null string, then 
+.BI \e i
+always matches; if the subexpression does not match, 
+.BI \e i
+does not match either.
+.TP
+.BI \e c
+matches a verbatim character
+.IR c ,
+where
+.I c
+is the current delimiter, or any of 
+.BR \e ", " ^ ", " $ ", " . ", " [ " or " * .
+.TP
+.IB regexp1 \e| regexp2
+(extension) matches either 
+.IR regexp1 " or " regexp2 .
+.TP
+.BI [ bracket-expression ]
+matches any character specified by the 
+.IR bracket-expression . 
+This can include:
+.RS
+.TP
+.I x
+.RI "character " x .
+.TP
+.IB x \- y
+characters between 
+.IR x " and " y
+inclusively (in the ASCII order).
+.TP
+.BI [: name :]
+all characters of the specified character class, where
+.I name
+is one of
+.BR alnum ", " alpha ", " blank ", " cntrl ", " digit ", " graph ", " lower ,
+.BR print ", " punct ", " space ", " upper ", " xdigit .
+.TP
+.B \en
+(extension) the
+.I newline
+character.
+.RE
+.IP
+As an example, 
+.B [a-cx[:space:]]
+matches any of the following characters:
+.BR a ", " b ", " c ", " x ", " 
+.IR tab ", " space . 
+.IP 
+To include a 
+.B ]
+put it at the first character of the 
+.I bracket-expression;
+to include a 
+.B [
+put it last.
+.TP
+.BI [^ bracket-expression ]
+matches any character not among those specified by the
+.IR bracket-expression .
+.TP
+.BI \e( regexp-elements \e)
+group the 
+.I regexp-elements 
+between matching
+.BR \e( " and " \e)
+as a subexpression. The subexpression matches if the concatenation
+of the 
+.I regexp-elements 
+matches.
+.P
+Elements above can be repeated when followed by one of the following
+suffixes:
+.TP
+.B *
+match 0 or more times.
+.TP
+.BI \e{ n \e}
+match exactly
+.I n
+times.
+.TP
+.BI \e{ n ,\e}
+match 
+.I n
+or more times.
+.TP
+.BI \e{ n , m \e}
+match between
+.IR n " and " m
+times inclusively.
+.TP
+.B \e?
+(extension) a synonym of
+.BR \e{0,1\e} .
+.TP
+.B \e+
+(extension) a synonym of
+.BR \e{1,\e} .
+.P
+If 
+.B sed 
+encounters an empty regexp, the last previously used regexp is 
+used instead.
+.SH PORTABILITY
+.P
+This implementation is based closely on the POSIX specification.
+The following extensions are allowed only when not in POSIX mode.
+.SS Extensions
+.TP
+non-printable characters
+In regexps, the
+.I text
+arguments of the 
+.BR a\e ", " c\e ", " i\e
+commands, and string arguments of 
+.BR s " and " y
+commands, some of the following sequences are recognised:
+.RS
+.TP
+.BR \ea ", " \eb ", " \ef ", " \en ", " \er ", " \et ", " \ev
+stand for the corresponding verbatim characters.
+.TP
+.BI \ex XX
+stands for the verbatim character whose hexadecimal ASCII number is 
+.RI 0x XX .
+.RE
+.TP
+regexp extensions
+.BR \e+ ", " \e? ", " \e| " and " \en
+in bracket expressions are supported.
+.SS Anchoring
+.P
+Subexpression anchoring is not implemented. For example 
+.B /\e(^a\e)/ 
+is a synonym of 
+.BR /\e(\e^a\e)/ ,
+not of 
+.BR /^\e(a\e)/ .
+.SS Locale
+Collation-related bracket expressions such as 
+.BR [:digit:] ", " [=a=] " and " [.[.]
+are only recognised in the POSIX locale.
+.SH BUGS
+This implementation relies internally on the javascript regular 
+expressions which do not implement strictly the leftmost, longest 
+matching rule mandated by POSIX. Instead, greedy matching is implemented
+where each part of the regular expression is tried from left to right 
+for the longest match. As an example:
+.IP
+echo "aaabaaa" | sed 's/a*\e(a*\e)b\e1/<&>'
+.P
+outputs `<aaab>aaa' 
+in this implementation (as in many historical 
+implementations), instead of `<aaabaaa>' (mandated by POSIX).
+.P
+Extensions are not implemented in a consistent manner.
+.P
+Commands
+.BR r " and " w 
+are fake, as well as the 
+.I wfile
+argument to the
+.B s///
+command.
+.SH AUTHORS
+Some parts of
+.B jsed
+were re-implemented from
+.B csed
+(also known as cheap-sed), itself based on the original
+.BR sed\  1.3 
+written by Eric S. Raymond ages ago.
+.P
+Support fot the HTML navigator was taken from
+.B jslint
+by Douglas Crockford
+.SH COPYRIGHT
+Copyright (C) 2003-2005 Laurent Vogel
+.P
+This  is  free software; see the source for copying conditions. 
+There is NO warranty; not even for MERCHANTABILITY or 
+FITNESS FOR A PARTICULAR PURPOSE.
+.SH REPORTING BUGS
+Report bugs to Laurent Vogel <lvl2@club-internet.fr>.
+.SH SEE ALSO
+.BR awk (1), 
+.BR ed (1), 
+.BR grep (1), 
+.BR perl (1), 
+.BR regexp (5).
+.P
+http://sed.sf.net
+

@@ -1,0 +1,68 @@
+
+2005-01-22
+- added tests that test the testing environment (they deliberately fail)
+- grabbed sed.1 and man2html.sed from recent CSed.
+- packaging done: ready for version 1.0
+
+2005-01-21
+- bug found: $_ was interpreted by regexp.replace(); we now protect
+  "$" into "$$" in replace strings.
+- POSIX flag implemented. [^\n] and other extensions allowed 
+  when not pflag.
+- jslint passed OK but for one case of == 0.
+- local copy of -n flag implemented (#n used to change the global setting)
+
+2004-02-16
+- finished converting jsed to an object.
+- removed the dumb compressor.
+- netscape/ie handling taken from jslint html page: first usable html page.
+- r and w commands implemented by use of hooks sed.read() and sed.write(),
+  so that clever HTML interfaces can implement them and let the sed engine 
+  use them.
+
+2003-09-26
+- started converting jsed to an object, hiding other global variables.
+
+2003-09-21
+- played with a compressor for the test suite
+- simplified the jsed compactor
+
+2003-09-18
+- copied in a dumb compressor (for future experiments aiming at decreasing
+  the size of the test suite)
+- bracket expressions are now entirely checked: [b-a] and other bad 
+  constructs are now intercepted before they are given to the javascript 
+  engine; [:alpha:] and other POSIX stuff implemented in the POSIX locale.
+- error report shows an approximate location of the error.
+
+2003-09-17
+- added { } grouping
+- more robust error message passing in compilation phase
+- make tgz fixed
+- implemented /g and /n flags
+- added test suite taken verbatim from csed
+- c\ fixed in conjunction with selected() (the text was sometimes
+  also output on the first line of a two address range)
+- P fixed (newline was not output)
+- D fixed (used to branch even if no newline was present)
+- RE compilation extended to detect bad REs before they break the
+  javascript program. Still TODO: bracket expressions must be checked 
+  for bad constructs such as [b-a].
+- /./ compiled as /[\x01-\xff]/ because . matches everything but
+  newline in javascript
+
+2003-09-16
+- debug system halts the interpreter if an endless loop is found
+- removed str array (strings can be put directly in cmd[])
+- ycomp: set y[0] to a non-null character
+- no more endless loop when trying to read line 2
+- sedexec() implemented for a subset of commands
+- interface changed with the html page
+- removed re[], re now stored as strings in cmd[] (because it is sometimes
+  needed to compile them with the g flag, and sometimes not)
+
+2003-09-15
+- javascript sed implementation project open
+- Makefile, changelog.txt, todo.txt added
+- a.html: dumb user interface
+- jsed.js: started compiling some commands

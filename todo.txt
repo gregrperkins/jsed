@@ -1,0 +1,10 @@
+
+todo list for JSed
+
+- prettier HTML user interface
+- clean the test suite; ensure it can be the same for csed and jsed:
+  separate shell interaction in some files;
+  separate extensions
+- remove g flag (implement it as num == 0 or -1) ?
+- understand why jslint asks for compare with ===
+

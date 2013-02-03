@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+
+<title>Jsed - sed in JavaScript</title>
+<meta name="keywords" content="lvl, laurent vogel, sed">
+<meta name="description" content="Laurent Vogel's Computer-related projects">
+<meta name="robots" content="index,follow">
+<meta name="author" content="Laurent Vogel">
+<meta name="copyright" content="Laurent Vogel">
+<body text="#000000" background="#ffffff">
+
+<h1 align="center">Jsed - a sed in JavaScript</h1>
+
+<p align="center">
+<a href="#about">About</a> | 
+<a href="#run">Run JSed</a> | 
+<a href="#manual">Manual</a> |
+<a href="#download">Download</a> | 
+<a href="#links">Links</a> 
+</p>
+
+<a name="about"><h2>About JSed</h2></a>
+
+<p>Here is a implementation of sed in Javascript. It features mostly
+POSIX sed but for some exceptions. 
+Despite what one might fear it is not untolerably slow because it 
+relies internally on the Javascript native Regular Expressions.</p>
+
+
+<a name="run"><h2>Run JSed</h2></a>
+
+<p>you can:</p>
+<ul><li>
+<a href="jsed.html">Run JSed</a> by giving your sed script;
+</li><li>
+<a href="check.html">Check Jsed</a>, by executing the test suite.
+Some tests delibarately fail to test the testing environment itself.
+Only 4 out of 459 tests should fail.
+</li></ul>
+
+<p>The JSed engine itself is a self-contained javascript file,
+which can be used by several HTML files for different usages. Here are
+two examples of directly supplying the sed script:
+<ul><li>
+<a href="runsedcheck.html">Run sedcheck.sed</a>, a sed script which 
+diagnoses portability issues of other sed scripts (see description
+<a href="http://lvogel.free.fr/sed.htm#sedcheck">here</a>);
+</li>
+<li>
+<a href="rundc.html">Run dc.sed</a>, the amazing calculator by
+Greg Ubben.
+</li></ul>
+</p>
+
+<a name="manual"><h2>User's manual</h2></a>
+
+<h3>Quick intro</h3>
+
+<p>Edit the sed script into the <b>Script</b> editing area; edit the input into
+the <b>Input</b> editing area; then click on the <b>run</b> button to compile the 
+script internally and then execute it on your input. If errors are found when
+compiling, they are displayed in bold face in the bottom of the window and
+the script is not executed. Else the output appears in the bottom of the
+window.</p>
+
+<p>There are three settings that affect the behaviour of JSed:</p>
+<ul><li>
+<b>-n flag:</b> 
+If this checkbox is checked, then the default that normally takes place at 
+the end of each cycle is suppressed (this is equivalent to giving the
+<tt>-n</tt> option on the command line). If the first two characters of the
+script are <tt>#n</tt> then it is equivalent to checking this option.
+</li><li>
+<b><small>POSIX</small> flag:</b> 
+If this checkbox is checked, then some sed extensions are disabled.
+</li><li>
+<b>jumpmax:</b>
+JSed will stop if that many jumps (due to <tt>{</tt>, <tt>b</tt>, <tt>t</tt>
+or <tt>D</tt>) occur while processing the same input line.
+</li></ul>
+
+<h3>Full manual</h3>
+
+<p>The complete user manual is on a <a href="manual.html">separate page</a>.</p>
+
+<a name="download"><h2>Download</h2></a>
+
+<p>Download the full archive: 
+<a href="jsed-1.0.tar.gz">jsed-1.0.tar.gz</a> (48 kB)
+</p>
+
+<a name="links"><h2>Links</h2></a>
+
+<ul><li>
+<a href="http://sed.sf.net">sed.sf.net</a>, a hoard of <code>sed</code> 
+resources. Be sure to check the <a href="http://sed.sf.net/grabbag"
+>grabbag</a> on the same site. These sites really contain a lot
+(all?) of sed resources.
+</li><li>the
+<a href="http://www.opengroup.org/onlinepubs/007904975/utilities/sed.html
+">sed</a> and 
+<a href="http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html"
+>regular expressions</a> pages from
+the Single UNIX Specification (POSIX). Thanks go to the Open Group for kindly 
+making them available in HTML form free of charge.
+</li><li>
+the mailing list <code>&lt;sed-users@yahoo-groups.com&gt;</code>
+</li><li>
+<a href="http://lvogel.free.fr/sed.htm">My own sed page</a>
+</li></ul>
+
+<p align="center">
+<a href="#about">About</a> | 
+<a href="#run">Run JSed</a> | 
+<a href="#manual">Manual</a> |
+<a href="#download">Download</a> | 
+<a href="#links">Links</a> 
+</p>
+
+<p>Copyright (C) 2005 Laurent Vogel &lt;lvl (at) club-internet (dot) fr&gt;</p>
+</body>
+</html>
